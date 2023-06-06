@@ -61,19 +61,14 @@ void shutdown();
 
 int main(int argc, char* argv[])
 {
+    initialize();
     
-    glClearColor(BG_RED, BG_BLUE, BG_GREEN, BG_OPACITY);
-    
-    
-    SDL_Event event;
-    while (g_game_is_running)
-    {
-        
-        glClear(GL_COLOR_BUFFER_BIT);
-        SDL_GL_SwapWindow(g_display_window);
+    while (g_game_is_running){
+        process_input();
+        update();
+        render();
     }
-    
-    SDL_Quit();
+    shutdown();
     return 0;
 }
 
@@ -98,7 +93,7 @@ void initialize(){
 #ifdef _WINDOWS
     glewInit();
 #endif
-    glViewport(VIEWPORT_X, VIEWPORT_Y, VIEWPORT_HEIGHT, VIEWPORT_WIDTH);    // Initialize our camera
+    glViewport(VIEWPORT_X, VIEWPORT_Y, VIEWPORT_WIDTH, VIEWPORT_HEIGHT);    // Initialize our camera
     g_program.Load(V_SHADER_PATH, F_SHADER_PATH);                           // Load up shaders
     
     // Initialize our view model, and projection matrices
@@ -129,6 +124,31 @@ void update(){
     /*
      No updates yet so this will remain empty for now
      */
+}
+
+void render(){
+    //Step 1 - Clear the color
+    glClear(GL_COLOR_BUFFER_BIT);
+    
+    //step 2 - Now we set our model matrix
+    g_program.SetModelMatrix(g_model_matrix);
+    
+    //Step 3 - set up triangle vertices and draw them
+    float vertices[] =
+    {
+        0.5f, -0.5f,     //(x1,y1)
+        0.0f, 0.5f,     //(x2,y2)
+       -0.5f, -0.5f     //(x3, y3)
+    };
+    
+    glVertexAttribPointer(g_program.positionAttribute, 2, GL_FLOAT, false, 0, vertices);
+    glEnableVertexAttribArray(g_program.positionAttribute);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDisableVertexAttribArray(g_program.positionAttribute);
+    
+    //step 4 - swap the previous frame to the current frame
+    SDL_GL_SwapWindow(g_display_window);
+    
 }
 
 void shutdown(){
